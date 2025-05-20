@@ -1,8 +1,10 @@
+
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import base64
 import os
 import time
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 CORS(app)
@@ -16,14 +18,14 @@ def upload_file():
         f.write(encrypted_data)
     return jsonify({"message": "File uploaded successfully"})
 
-@app.route('/download/<filename>', methods=['GET'])
-def download_file():
-    with open(f"storage/{filename}", 'r') as f:
-        encrypted_data = f.read()
-    decrypted_data = base64.b64decode(encrypted_data)
-    with open(f"temp/{filename}", 'wb') as f:
-        f.write(decrypted_data)
-    return send_file(f"temp/{filename}", as_attachment=True)
+# @app.route('/download/<filename>', methods=['GET'])
+# def download_file():
+#     with open(f"storage/{filename}", 'r') as f:
+#         encrypted_data = f.read()
+#     decrypted_data = base64.b64decode(encrypted_data)
+#     with open(f"temp/{filename}", 'wb') as f:
+#         f.write(decrypted_data)
+#     return send_file(f"temp/{filename}", as_attachment=True)
 
 @app.route('/files', methods=['GET'])
 def list_files():
@@ -84,3 +86,48 @@ if __name__ == '__main__':
     os.makedirs('storage', exist_ok=True)
     os.makedirs('temp', exist_ok=True)
     app.run(debug=True)
+
+
+
+@app.route('/download/<filename>', methods=['GET'])
+def download_file(filename):
+    filename = secure_filename(filename)
+    storage_path = os.path.join(STORAGE_DIR, filename)
+
+    if not os.path.exists(storage_path):
+        return jsonify({"error": "File not found"}), 404
+
+    try:
+        with open(storage_path, 'r') as f:
+            file_content = f.read()
+
+        # Check if the file content is Base64-encoded
+        try:
+            # Attempt to decode as Base64
+            decrypted_data = base64.b64decode(file_content)
+            # If decoding succeeds, use the decoded content
+            is_base64 = True
+        except base64.binascii.Error:
+            # If decoding fails, assume the content is plain text
+            decrypted_data = file_content.encode('utf-8')
+            is_base64 = False
+
+        # Write the content to a temporary file
+        temp_path = os.path.join(TEMP_DIR, filename)
+        with open(temp_path, 'wb') as f:
+            f.write(decrypted_data)
+
+        # Send the file as a download
+        response = send_file(temp_path, as_attachment=True, download_name=filename)
+
+        # Clean up the temporary file after sending
+        try:
+            os.remove(temp_path)
+        except OSError as e:
+            print(f"Warning: Failed to delete temporary file {temp_path}: {e}")
+
+        return response
+
+    except Exception as e:
+        # Handle any other errors (e.g., file reading issues)
+        return jsonify({"error": f"Failed to download file: {str(e)}"}), 500
