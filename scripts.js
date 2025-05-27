@@ -1,7 +1,7 @@
 
 const users = {
     admin: { password: "admin123", role: "admin", mfa: "123456", permissions: { read: true, write: true, delete: true } },
-    user: { password: "user123", role: "user", mfa: "654321", permissions: { read: true, write: true, delete: true} }
+    user: { password: "user123", role: "user", mfa: "654321", permissions: { read: true, write: true, delete: true } }
 };
 
 let currentUser = null;
@@ -9,7 +9,7 @@ let operationLog = [];
 let currentPath = "/";
 
 function showMenu() {
-    alert("Available Operations:\n- - Create File\n- Create Directory\n- Delete File\n- Rename File\n- Edit File\n- Search File\n- View File\n- Sort Files\n- Copy File\n- Move File\n- Append to File\n- Check File Size\n- Check Last Modified\n- Clear File\n- Backup File\n- Search Content");
+    alert("Available Operations:\n- List Files\n- Create File\n- Create Directory\n- Delete File\n- Rename File\n- Edit File\n- Search File\n- View File\n- Sort Files\n- Copy File\n- Move File\n- Append to File\n- Check File Size\n- Check Last Modified\n- Clear File\n- Backup File\n- Search Content");
 }
 
 function login() {
@@ -47,12 +47,8 @@ function logout() {
     document.getElementById("mfa-code").value = "";
 }
 
-
 function getPath(filename) {
-    if (!filename) return currentPath;
-
-    const sanitizedPath = currentPath.endsWith('/') ? currentPath.slice(0, -1) : currentPath;
-    return `${sanitizedPath}/${filename}`;
+    return currentPath === "/" ? `/${filename}` : `${currentPath}/${filename}`;
 }
 
 function uploadFile() {
@@ -335,8 +331,6 @@ function viewFile(filename) {
     }
 }
 
-
-
 // function sortFiles() {
 //     const files = JSON.parse(localStorage.getItem("files") || "{}");
 //     const pathPrefix = currentPath === "/" ? "/" : currentPath + "/";
@@ -534,21 +528,6 @@ function searchContent(filename) {
     }
 }
 
-// function downloadFile(filename) {
-//     const files = JSON.parse(localStorage.getItem("files") || "{}");
-//     if (files[filename].isDirectory) {
-//         alert("Cannot download a directory");
-//         return;
-//     }
-//     if (files[filename] && users[currentUser].permissions.read) {
-//         const content = files[filename].data;
-//         const link = document.createElement("a");
-//         link.href = "data:text/plain;charset=utf-8," + encodeURIComponent(content);
-//         link.download = filename.split("/").pop();
-//         link.click();
-//         logOperation("download_file", filename);
-//     }
-// }
 function downloadFile(filename) {
     const files = JSON.parse(localStorage.getItem("files") || "{}");
     if (files[filename].isDirectory) {
@@ -568,6 +547,7 @@ function downloadFile(filename) {
 
 
 
+
 // Apply button classes on page load
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelector("#auth-section button").classList.add("login-btn");
@@ -581,3 +561,4 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".file-operations button")[6].classList.add("sort-btn");
     document.querySelector(".file-actions button").classList.add("logout-btn");
 });
+
