@@ -133,49 +133,135 @@ function enterDirectory(filename) {
     }
 }
 
+// function loadFiles() {
+//     const fileList = document.getElementById("file-list");
+//     const pathDisplay = document.getElementById("current-path");
+//     fileList.innerHTML = "";
+//     pathDisplay.textContent = `Current Path: ${currentPath}`;
+//     const files = JSON.parse(localStorage.getItem("files") || "{}");
+//     const pathPrefix = currentPath === "/" ? "/" : currentPath + "/";
+
+//     for (let filename in files) {
+//         if (filename.startsWith(pathPrefix) && filename !== currentPath &&
+//             filename.split("/").length === pathPrefix.split("/").length &&
+//             users[currentUser].permissions.read && (users[currentUser].role === "admin" || files[filename].owner === currentUser)) {
+//             const shortName = filename.split("/").pop();
+//             const fileItem = document.createElement("div");
+//             fileItem.className = `file-item ${files[filename].isDirectory ? 'directory' : ''}`;
+//             const buttons = files[filename].isDirectory
+//                 ? `
+//                     <button class="open-btn" onclick="enterDirectory('${shortName}')">Open</button>
+//                     <button class="delete-btn" onclick="deleteFile('${filename}')">Delete</button>
+//                     <button class="rename-btn" onclick="renameFile('${filename}', '${shortName}')">Rename</button>
+//                 `
+//                 : `
+//                     <button class="view-btn" onclick="viewFile('${filename}')">View</button>
+//                     <button class="edit-btn" onclick="editFile('${filename}')">Edit</button>
+//                     <button class="download-btn" onclick="downloadFile('${filename}')">Download</button>
+//                     <button class="delete-btn" onclick="deleteFile('${filename}')">Delete</button>
+//                     <button class="rename-btn" onclick="renameFile('${filename}', '${shortName}')">Rename</button>
+//                     <button class="copy-btn" onclick="copyFile('${filename}', '${shortName}')">Copy</button>
+//                     <button class="move-btn" onclick="moveFile('${filename}', '${shortName}')">Move</button>
+//                     <button class="append-btn" onclick="appendToFile('${filename}')">Append</button>
+//                     <button class="size-btn" onclick="checkFileSize('${filename}')">Size</button>
+//                     <button class="modified-btn" onclick="checkLastModified('${filename}')">Modified</button>
+//                     <button class="clear-btn" onclick="clearFile('${filename}')">Clear</button>
+//                     <button class="backup-btn" onclick="backupFile('${filename}', '${shortName}')">Backup</button>
+//                     <button class="search-content-btn" onclick="searchContent('${filename}')">Search Content</button>
+//                 `;
+//             fileItem.innerHTML = `
+//                 <span>${files[filename].isDirectory ? '[DIR] ' : ''}${shortName}</span>
+//                 <div>${buttons}</div>
+//             `;
+//             fileList.appendChild(fileItem);
+//         }
+//     }
+// }
 function loadFiles() {
-    const fileList = document.getElementById("file-list");
-    const pathDisplay = document.getElementById("current-path");
-    fileList.innerHTML = "";
+    const fileList = document.getElementById('file-list');
+    const pathDisplay = document.getElementById('current-path');
+    fileList.innerHTML = '';
     pathDisplay.textContent = `Current Path: ${currentPath}`;
-    const files = JSON.parse(localStorage.getItem("files") || "{}");
-    const pathPrefix = currentPath === "/" ? "/" : currentPath + "/";
+    
+    const files = JSON.parse(localStorage.getItem('files') || '{}');
+    const pathPrefix = currentPath === '/' ? '/' : currentPath + '/';
 
     for (let filename in files) {
-        if (filename.startsWith(pathPrefix) && filename !== currentPath &&
-            filename.split("/").length === pathPrefix.split("/").length &&
-            users[currentUser].permissions.read && (users[currentUser].role === "admin" || files[filename].owner === currentUser)) {
-            const shortName = filename.split("/").pop();
-            const fileItem = document.createElement("div");
+        if (
+            filename.startsWith(pathPrefix) &&
+            filename !== currentPath &&
+            filename.split('/').length === pathPrefix.split('/').length &&
+            users[currentUser].permissions.read &&
+            (users[currentUser].role === 'admin' || files[filename].owner === currentUser)
+        ) {
+            const shortName = filename.split('/').pop();
+            const fileItem = document.createElement('div');
             fileItem.className = `file-item ${files[filename].isDirectory ? 'directory' : ''}`;
-            const buttons = files[filename].isDirectory
-                ? `
-                    <button class="open-btn" onclick="enterDirectory('${shortName}')">Open</button>
-                    <button class="delete-btn" onclick="deleteFile('${filename}')">Delete</button>
-                    <button class="rename-btn" onclick="renameFile('${filename}', '${shortName}')">Rename</button>
-                `
-                : `
-                    <button class="view-btn" onclick="viewFile('${filename}')">View</button>
-                    <button class="edit-btn" onclick="editFile('${filename}')">Edit</button>
-                    <button class="download-btn" onclick="downloadFile('${filename}')">Download</button>
-                    <button class="delete-btn" onclick="deleteFile('${filename}')">Delete</button>
-                    <button class="rename-btn" onclick="renameFile('${filename}', '${shortName}')">Rename</button>
-                    <button class="copy-btn" onclick="copyFile('${filename}', '${shortName}')">Copy</button>
-                    <button class="move-btn" onclick="moveFile('${filename}', '${shortName}')">Move</button>
-                    <button class="append-btn" onclick="appendToFile('${filename}')">Append</button>
-                    <button class="size-btn" onclick="checkFileSize('${filename}')">Size</button>
-                    <button class="modified-btn" onclick="checkLastModified('${filename}')">Modified</button>
-                    <button class="clear-btn" onclick="clearFile('${filename}')">Clear</button>
-                    <button class="backup-btn" onclick="backupFile('${filename}', '${shortName}')">Backup</button>
-                    <button class="search-content-btn" onclick="searchContent('${filename}')">Search Content</button>
-                `;
-            fileItem.innerHTML = `
-                <span>${files[filename].isDirectory ? '[DIR] ' : ''}${shortName}</span>
-                <div>${buttons}</div>
-            `;
+            
+            const fileNameSpan = document.createElement('span');
+            fileNameSpan.textContent = `${files[filename].isDirectory ? '[DIR] ' : ''}${shortName}`;
+            
+            const dropdownContainer = document.createElement('div');
+            dropdownContainer.className = 'dropdown';
+            
+            const dropdownBtn = document.createElement('button');
+            dropdownBtn.className = 'dropdown-btn';
+            dropdownBtn.textContent = 'Actions ▼';
+            
+            const dropdownContent = document.createElement('div');
+            dropdownContent.className = 'dropdown-content';
+
+            if (files[filename].isDirectory) {
+                addActionButton(dropdownContent, 'Open', () => enterDirectory(shortName));
+                addActionButton(dropdownContent, 'Share', () => shareFile(filename));
+                addActionButton(dropdownContent, 'Delete', () => deleteFile(filename));
+                addActionButton(dropdownContent, 'Rename', () => renameFile(filename, shortName));
+            } else {
+                addActionButton(dropdownContent, 'View', () => viewFile(filename));
+                addActionButton(dropdownContent, 'Edit', () => editFile(filename));
+                addActionButton(dropdownContent, 'Download', () => downloadFile(filename));
+                addActionButton(dropdownContent, 'Delete', () => deleteFile(filename));
+                addActionButton(dropdownContent, 'Rename', () => renameFile(filename, shortName));
+                addActionButton(dropdownContent, 'Copy', () => copyFile(filename, shortName));
+                addActionButton(dropdownContent, 'Append', () => appendToFile(filename));
+                addActionButton(dropdownContent, 'Backup', () => backupFile(filename, shortName));
+            }
+
+            dropdownBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                document.querySelectorAll('.dropdown-content').forEach(dd => {
+                    if (dd !== dropdownContent) dd.style.display = 'none';
+                });
+                dropdownContent.style.display = dropdownContent.style.display === 'block' ? 'none' : 'block';
+            });
+
+            document.addEventListener('click', function closeDropdown(e) {
+                if (!dropdownContainer.contains(e.target)) {
+                    dropdownContent.style.display = 'none';
+                }
+            }, { once: true });
+
+            dropdownContainer.appendChild(dropdownBtn);
+            dropdownContainer.appendChild(dropdownContent);
+
+            fileItem.appendChild(fileNameSpan);
+            fileItem.appendChild(dropdownContainer);
+
             fileList.appendChild(fileItem);
         }
     }
+}
+
+// Helper function to add action buttons to dropdown
+function addActionButton(container, text, onClick) {
+    const btn = document.createElement('button');
+    btn.textContent = text;
+    btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        onClick();
+        container.style.display = 'none';
+    });
+    container.appendChild(btn);
 }
 
 function createFile() {
@@ -527,6 +613,33 @@ function searchContent(filename) {
         logOperation("search_content", filename);
     }
 }
+function searchInAllFiles() {
+    const files = JSON.parse(localStorage.getItem("files") || "{}");
+    const searchTerm = prompt("Enter content to search:");
+
+    if (!searchTerm) return;
+
+    const matchingFiles = [];
+
+    for (const filename in files) {
+        const file = files[filename];
+        if (!file.isDirectory && typeof file.data === "string") {
+            if (file.data.includes(searchTerm)) {
+                matchingFiles.push(filename);
+            }
+        }
+    }
+
+    if (matchingFiles.length > 0) {
+        alert(`"${searchTerm}" found in:\n\n${matchingFiles.join("\n")}`);
+    } else {
+        alert(`"${searchTerm}" not found in any file.`);
+    }
+
+    // Optional: Log search on each file where term was found
+    matchingFiles.forEach(filename => logOperation("search_content", filename));
+}
+
 
 function downloadFile(filename) {
     const files = JSON.parse(localStorage.getItem("files") || "{}");
@@ -561,4 +674,5 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".file-operations button")[6].classList.add("sort-btn");
     document.querySelector(".file-actions button").classList.add("logout-btn");
 });
+
 
