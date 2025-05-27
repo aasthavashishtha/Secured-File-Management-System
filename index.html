@@ -38,7 +38,7 @@
 
         h2 {
             color: #2d2c2c;
-            margin : 0 auto;
+            margin: 0 auto;
             text-align: center;
         }
 
@@ -52,38 +52,79 @@
             box-sizing: border-box;
         }
 
-
-         button {
-            padding: 10px 35px;
+        button {
+            padding: 10px 20px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            margin: 5px auto;
+            margin: 5px;
             color: white;
             font-weight: bold;
-            transition: background-color 0.2s;
+            transition: all 0.2s;
             background-color: #323334;
         }
-
 
         button:hover {
             opacity: 0.9;
         }
 
-        .file-upload, .file-operations {
+        .file-upload {
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
             flex-wrap: wrap;
         }
 
-        .file-operations input {
-            flex: 1;
+        .dropdown {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        .dropdown-btn {
+            padding: 10px 35px;
+            background-color: #323334;
+            color: white;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
             min-width: 200px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 4px;
+        }
+
+        .dropdown-content button {
+            color: #333;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            width: 100%;
+            text-align: left;
+            background-color: #f9f9f9;
+            border-bottom: 1px solid #ddd;
+            margin: 0;
+            border-radius: 0;
+        }
+
+        .dropdown-content button:hover {
+            background-color: #e0e0e0;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
         }
 
         #file-list {
             margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.7);
         }
 
         .file-item {
@@ -92,11 +133,68 @@
             align-items: center;
             padding: 10px;
             border-bottom: 1px solid #eee;
+            position: relative;
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-actions {
+            display: flex;
+            align-items: center;
+        }
+
+        .file-name {
+            flex-grow: 1;
+        }
+
+        .file-dropdown {
+            position: relative;
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        .file-dropdown-btn {
+            padding: 5px 10px;
+            background-color: #323334;
+            color: white;
+            font-size: 12px;
+        }
+
+        .file-dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: #f9f9f9;
+            min-width: 150px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 4px;
+        }
+
+        .file-dropdown-content button {
+            color: #333;
+            padding: 8px 12px;
+            text-decoration: none;
+            display: block;
+            width: 100%;
+            text-align: left;
+            background-color: #f9f9f9;
+            border-bottom: 1px solid #ddd;
+            margin: 0;
+            border-radius: 0;
+            font-size: 12px;
+        }
+
+        .file-dropdown:hover .file-dropdown-content {
+            display: block;
         }
 
         #auth-message {
             color: #dc3545;
             margin-top: 10px;
+            text-align: center;
         }
 
         .directory {
@@ -108,6 +206,15 @@
             margin-bottom: 10px;
             font-weight: bold;
             color: #333;
+            padding: 8px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 4px;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -128,22 +235,55 @@
             <div id="file-section" style="display: none;">
                 <h2>File Management</h2>
                 <div id="current-path">Current Path: /</div>
+                
                 <div class="file-upload">
                     <input type="file" id="file-input" multiple>
                     <button onclick="uploadFile()">Upload File</button>
                 </div>
-                <div class="file-operations">
-                    <input type="text" id="search-input" placeholder="Search files...">
-                    <button onclick="searchFile()">Search</button>
-                    <button onclick="showMenu()">Menu</button>
-                    <button onclick="createFile()">Create File</button>
-                    <button onclick="createDirectory()">Create Directory</button>
-                    <button onclick="goUp()">Go Up</button>
-                    <button onclick="goHome()">Home</button>
-                    <button onclick="sortFiles()">Sort Files</button>
+                
+                <div class="dropdown">
+                    <button class="dropdown-btn">File Operations ▼</button>
+                    <div class="dropdown-content">
+                        <button onclick="searchFile()">Search Files</button>
+                        <button onclick="createFile()">Create New File</button>
+                        <button onclick="createDirectory()">Create Directory</button>
+                        <button onclick="goHome()">Go to Home Directory</button>
+                        <button onclick="sortFiles()">Sort Files</button>
+                        <button onclick="searchInAllFiles()">Search In All Files</button>
+                    </div>
                 </div>
-                <div id="file-list"></div>
-                <div id="file-actions">
+                
+                <div id="file-list">
+                    <!-- Sample file item with dropdown - this would be generated dynamically in your JS -->
+                    <div class="file-item">
+                        <div class="file-name">example.txt</div>
+                        <div class="file-actions">
+                            <div class="file-dropdown">
+                                <button class="file-dropdown-btn">Actions ▼</button>
+                                <div class="file-dropdown-content">
+                                    <button onclick="downloadFile('example.txt')">Download</button>
+                                    <button onclick="shareFile('example.txt')">Share</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Another sample for a directory -->
+                    <div class="file-item">
+                        <div class="file-name directory">Documents</div>
+                        <div class="file-actions">
+                            <div class="file-dropdown">
+                                <button class="file-dropdown-btn">Actions ▼</button>
+                                <div class="file-dropdown-content">
+                                    <button onclick="openDirectory('Documents')">Open</button>
+                                    <button onclick="shareFile('Documents')">Share</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button onclick="refreshFiles()">Refresh</button>
                     <button onclick="logout()">Logout</button>
                 </div>
             </div>
